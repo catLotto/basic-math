@@ -80,7 +80,6 @@
 		
 		function getPI(deg) {
 			//-- Archimedes Style
-			console.log('Number.isNaN(deg)', Number.isNaN(deg));
 			if (360 % deg) {
 				l.error(`Can't divided!`);
 				throw Error(`Can't divided!`);
@@ -152,6 +151,8 @@
 		
 		const l = new Log('log', 2);
 		const c = new CanvasForCircle('circle', 150);
+		l.log('Trigon Value : ' + getPI(60));
+		l.warn('Line Value : ' + c.drawCircle(60));
 	</script>
 </body>
 </html>
