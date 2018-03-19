@@ -6,7 +6,9 @@
 </head>
 <body>
 	<div id='log'><p>Push Button</p></div>
-	<p><canvas id='circle' width='500' height='500'></canvas></p>
+	<p>
+		<canvas id='circle' width='600' height='600'></canvas>
+	</p>
 	<label for='deg'>DEG</label>
 	<input type='text' id='deg' value='60' />
 	<button id='get'>Get PI</button>
@@ -22,6 +24,7 @@
 		<button>10</button>
 		<button>6</button>
 		<button>5</button>
+		<button>4</button>
 		<button>3</button>
 		<button>2</button>
 		<button>1</button>
@@ -78,7 +81,7 @@
 		function getPI(deg) {
 			//-- Archimedes Style
 			console.log('Number.isNaN(deg)', Number.isNaN(deg));
-			if (360 % deg || Number.isNaN(deg)) {
+			if (360 % deg) {
 				l.error(`Can't divided!`);
 				throw Error(`Can't divided!`);
 			}
@@ -110,6 +113,7 @@
 				}
 				s.$ctx.closePath();
 				s.$ctx.strokeStyle = color;
+				s.$ctx.lineWidth = '1px';
 				s.$ctx.stroke();
 				
 				const { pow } = Math,
@@ -147,7 +151,7 @@
 		}
 		
 		const l = new Log('log', 2);
-		const c = new CanvasForCircle('circle', 100);
+		const c = new CanvasForCircle('circle', 150);
 	</script>
 </body>
 </html>
