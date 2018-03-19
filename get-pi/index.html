@@ -6,10 +6,10 @@
 </head>
 <body>
 	<div id='log'><p>Push Button</p></div>
+	<p><canvas id='circle' width='300' height='300'></canvas></p>
 	<label for='deg'>DEG</label>
 	<input type='text' id='deg' value='60' />
 	<button id='get'>Get PI</button>
-	<canvas id='circle' width='300' height='300'></canvas>
 	<script type='text/javascript'>
 		get.addEventListener('click', _=> {
 			const v = Number(deg.value);
@@ -80,10 +80,27 @@
 				s.$ctx.moveTo(s.xCenter + s.r, s.yCenter);
 				for (let i = 0; i < 360 / deg; i++) {
 					s.$ctx.lineTo(s.xCenter + Math.cos(DEG * (i + 1)) * s.r, s.yCenter + Math.sin(DEG * (i + 1)) * s.r);
-					await new Promise(r => setTimeout(r, 1));
+//					await new Promise(r => setTimeout(r, 1));
 				}
 				s.$ctx.closePath();
-				s.$ctx.fill();
+				s.$ctx.strokeStyle = 'red';
+				s.$ctx.stroke();
+				
+				s.$ctx.beginPath();
+				s.$ctx.arc(s.xCenter, s.yCenter, s.r, 0, 2 * Math.PI);
+				s.$ctx.closePath();
+				s.$ctx.strokeStyle = 'purple';
+				s.$ctx.stroke();
+				
+				const out_r = s.r / Math.cos(DEG / 2);
+				s.$ctx.beginPath();
+				for (let i = 0; i < 360 / deg; i++) {
+					s.$ctx.lineTo(s.xCenter + Math.cos(DEG * (i + 1)) * out_r, s.yCenter + Math.sin(DEG * (i + 1)) * out_r);
+//					await new Promise(r => setTimeout(r, 1));
+				}
+				s.$ctx.closePath();
+				s.$ctx.strokeStyle = 'blue';
+				s.$ctx.stroke();
 			}
 			
 			drawCircle(deg, s = this) {
