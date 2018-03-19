@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Get PI</title>
+</head>
+<body>
+	<div id='log'></div>
+	<input type='text' id='deg' value='60' />
+	<button id='get'>Get PI</button>
+	<canvas id='circle' width='300' height='300'></canvas>
+	<script type='text/javascript'>
+		get.addEventListener('click', _=> {
+			const v = getPI(Number(deg.value));
+			log(v);
+			drawCircle(Number(deg.value));
+		});
+		
+		function getPI(deg) {
+			if (360 % deg) return Error(`Can't divided!`)
+			const DEG = Math.PI / 180 * deg / 2,
+						insideValue = Math.sin(DEG) * 2,
+						outsideValue = Math.tan(DEG) * 2;
+
+			return `${ insideValue * (360 / deg) / 2 } < PI < ${ outsideValue * (360 / deg) / 2 }`;
+		}
+		
+		const log = (function (str, param) {
+			const el = document.getElementById(str);
+			const limit = param;
+			const write = function (str, color) {
+				if (typeof color === 'number') return;
+				
+				const line = document.createElement('p');
+				line.innerText = str;
+				line.style['border'] = '#ccc 1px solid';
+				if (color) line.style['background-color'] = color;
+				if (el.children.length > limit) el.removeChild(el.firstChild);
+				el.appendChild(line);
+			}
+			return write;
+		})('log', 1);
+		
+		const drawCircle = (function () {
+			const el = document.getElementById('circle');
+			const ctx = el.getContext('2d'),
+						r = 100,
+						w = el.width,
+						h = el.height,
+						xCenter = w / 2,
+						yCenter = h / 2;
+			const draw = async function (deg) {
+				console.log('this', deg);
+				if (360 % deg) return Error(`Can't divided!`);
+				console.log('w', w, 'h', h);
+				ctx.clearRect(0, 0, w, h);
+				const DEG = Math.PI / 180 * deg;
+				ctx.beginPath();
+				ctx.moveTo(xCenter + r, yCenter);
+				for (let i = 0; i < 360 / deg; i++) {
+					ctx.lineTo(xCenter + Math.cos(DEG * (i + 1)) * r, yCenter + Math.sin(DEG * (i + 1)) * r);
+					await new Promise(r => setTimeout(r, 1));
+				}
+				ctx.closePath();
+				ctx.fill();
+			}
+			return draw;
+		})();
+	</script>
+</body>
+</html>
