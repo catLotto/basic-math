@@ -6,16 +6,44 @@
 </head>
 <body>
 	<div id='log'><p>Push Button</p></div>
-	<p><canvas id='circle' width='300' height='300'></canvas></p>
+	<p><canvas id='circle' width='500' height='500'></canvas></p>
 	<label for='deg'>DEG</label>
 	<input type='text' id='deg' value='60' />
 	<button id='get'>Get PI</button>
+	<div id='ex'>
+		<button>120</button>
+		<button>60</button>
+		<button>36</button>
+		<button>30</button>
+		<button>24</button>
+		<button>20</button>
+		<button>15</button>
+		<button>12</button>
+		<button>10</button>
+		<button>6</button>
+		<button>5</button>
+		<button>3</button>
+		<button>2</button>
+		<button>1</button>
+		<button>0.5</button>
+		<button>0.25</button>
+		<button>0.125</button>
+	</div>
 	<script type='text/javascript'>
 		get.addEventListener('click', _=> {
 			const v = Number(deg.value);
-			l.log(getPI(v));
-			c.drawCircle(v);
+			l.log('Trigon Value : ' + getPI(v));
+			l.warn('Line Value : ' + c.drawCircle(v));
 		});
+		
+		for (const btn of ex.children) {
+			btn.addEventListener('click', e => {
+				deg.value = e.target.innerText;
+				const v = Number(deg.value);
+				l.log('Trigon Value : ' + getPI(v));
+				l.warn('Line Value : ' + c.drawCircle(v));
+			});
+		}
 		
 		class Log {
 			constructor(name, limit) {
@@ -72,19 +100,34 @@
 				this.yCenter = this.h / 2;
 			}
 			
-			async draw(deg, s = this) {
-				if (360 % deg) return Error(`Can't divided!`);
-				s.$ctx.clearRect(0, 0, s.w, s.h);
+			drawPolygon(deg, r, color, s = this) {
 				const DEG = Math.PI / 180 * deg;
 				s.$ctx.beginPath();
-				s.$ctx.moveTo(s.xCenter + s.r, s.yCenter);
+				s.$ctx.moveTo(s.xCenter + r, s.yCenter);
 				for (let i = 0; i < 360 / deg; i++) {
-					s.$ctx.lineTo(s.xCenter + Math.cos(DEG * (i + 1)) * s.r, s.yCenter + Math.sin(DEG * (i + 1)) * s.r);
-//					await new Promise(r => setTimeout(r, 1));
+					s.$ctx.lineTo(s.xCenter + Math.cos(DEG * (i + 1)) * r, s.yCenter + Math.sin(DEG * (i + 1)) * r);
+					
 				}
 				s.$ctx.closePath();
-				s.$ctx.strokeStyle = 'red';
+				s.$ctx.strokeStyle = color;
 				s.$ctx.stroke();
+				
+				const { pow } = Math,
+							fx = (s.xCenter + r),
+							fy = s.yCenter,
+							nx = s.xCenter + Math.cos(DEG) * r,
+							ny = s.yCenter + Math.sin(DEG) * r;
+				const sideLength = pow(pow(fx - nx, 2) + pow(fy - ny, 2), 1 / 2);
+				const lineLength = sideLength * (360 / deg);
+//				console.log('sideLength', sideLength, 'lineLength', lineLength / r);
+				return lineLength / s.r / 2;
+			}
+			
+			draw(deg, s = this) {
+				if (360 % deg) return Error(`Can't divided!`);
+				s.$ctx.clearRect(0, 0, s.w, s.h);
+				const innerLineRatio = s.drawPolygon(deg, s.r, 'red');
+				const DEG = Math.PI / 180 * deg;
 				
 				s.$ctx.beginPath();
 				s.$ctx.arc(s.xCenter, s.yCenter, s.r, 0, 2 * Math.PI);
@@ -93,14 +136,9 @@
 				s.$ctx.stroke();
 				
 				const out_r = s.r / Math.cos(DEG / 2);
-				s.$ctx.beginPath();
-				for (let i = 0; i < 360 / deg; i++) {
-					s.$ctx.lineTo(s.xCenter + Math.cos(DEG * (i + 1)) * out_r, s.yCenter + Math.sin(DEG * (i + 1)) * out_r);
-//					await new Promise(r => setTimeout(r, 1));
-				}
-				s.$ctx.closePath();
-				s.$ctx.strokeStyle = 'blue';
-				s.$ctx.stroke();
+				const outterLineRatio = s.drawPolygon(deg, out_r, 'blue');
+				
+				return `${ innerLineRatio } < PI < ${ outterLineRatio }`;
 			}
 			
 			drawCircle(deg, s = this) {
@@ -108,7 +146,7 @@
 			}
 		}
 		
-		const l = new Log('log', 1);
+		const l = new Log('log', 2);
 		const c = new CanvasForCircle('circle', 100);
 	</script>
 </body>
