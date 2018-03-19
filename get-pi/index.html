@@ -48,7 +48,7 @@
 		
 		function getPI(deg) {
 			//-- Archimedes Style
-			if (360 % deg) return Error(`Can't divided!`)
+			if (360 % deg) throw l.error(`Can't divided!`);
 			const DEG = Math.PI / 180 * deg / 2,
 						insideValue = Math.sin(DEG) * 2,
 						outsideValue = Math.tan(DEG) * 2;
