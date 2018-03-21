@@ -104,7 +104,37 @@ class Solve {
 	}
 	
 	assignTainter(r, param) {
-		
+		for (const mode in r) {
+			r[mode] = r[mode].map(item => {
+				let resultItem = item;
+				for (const key in param) {
+					resultItem = resultItem.replace(key, param[key]);
+				}
+				return resultItem;
+			});
+		}
+	}
+	
+	moveTainter(r) {
+		for (const mode in r) {
+			r[mode] = r[mode].map(item => {
+				if (item.match(/[a-zA-Z]/g)) {
+					if (mode === 'right') {
+						r['left'].push(item);
+						return 0;
+					}
+				} else {
+					if (mode === 'left') {
+						r['right'].push(item);
+						return 0;
+					}
+				}
+				return item;
+			});
+			r[mode] = r[mode].filter(item => {
+				if (item !== 0) return true;
+			});
+		}
 	}
 	
 	solve(param, target) {
@@ -116,10 +146,13 @@ class Solve {
 				}
 			}
 		}
+		if (param) this.assignTainter(multiResult, param);
+		this.moveTainter(multiResult);
+		
 		this.plusTainter(multiResult);
-		console.log(multiResult);
+		return multiResult;
 	}
 }
-const b = new Solve('5 + 4 -3 + 7/c = 2 *a / 5 + 6.4 * -2 / c - 4/3 + 9 + 6', 'c + 3 = a + 5');
-//const b = new Solve('c = 1');
+//const b = new Solve('5 + 4 -3 + 7/c = 2 *a / 5 + 6.4 * -2 / c - 4/3 + 9 + 6', 'c + 3 = a + 5');
+const b = new Solve('b=1', 'c = 1');
 console.log(b.equationsStructure);
