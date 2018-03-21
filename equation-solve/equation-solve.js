@@ -8,6 +8,8 @@ const pop = (arr, sv, ev = 1) => {
 	return arr.splice(sv, ev);
 };
 
+// Fail..................... So difficult
+
 class Solve {
 	constructor(...equationStr) {
 		// y = a * x + 3 | [ 'y' ], [ 'a * x', '+3' ]
@@ -41,7 +43,11 @@ class Solve {
 					n += item.search('/') === -1 ? '*' + item : item;
 				}
 			});
-		return eval(n) + r;
+		
+		const result = eval(n) + r;
+		if (result.match(/^1\*/g)) return result.replace(/^1\*/g, '');
+		else if (result.match(/^-1\*/g)) return result.replace(/^-1\*/g, '-');
+		else return result;
 	}
 	
 	plusTainter(zero) {
@@ -80,7 +86,7 @@ class Solve {
 		let dir = ''; // Direct is '' or '-'
 		
 		const eq = str.replace(/ /g, '') + '+0'; // '-3=2a+6*2';
-		if (eq.match(/[\w\d]{2,}/g)) throw Error('Variable name should be one length.');
+		if (eq.match(/[a-zA-Z]{2,}|\d[a-zA-Z]+/g)) throw Error('Variable name should be one length.');
 		
 		var n = 0;
 		while (cursor < eq.length) {
@@ -125,19 +131,55 @@ class Solve {
 			return resultItem;
 		});
 	}
-	
-	moveTainter(r) {
+	divider(r, target) {
+		let left = [],
+				right = [];
+		
+		for (const item of r) {
+			if (target) {
+				if (item.search(target) !== -1) {
+					left.push(item);
+					continue;
+				}
+			} else {
+				if (item.match(/[a-zA-Z]/g)) {
+					left.push(item);
+					continue;
+				}
+			}
+			right.push(this.invertValue(item));
+		}
+		
+		if (target) {
+			let n = '';
 			
+			left.forEach(item => {
+				n += item[0] === '-' ? item.replace(target, '1') : '+' + item.replace(target, '1');
+			});
+//			left = [ eval(n) + '*' + target ];
+			left = [ target ];;
+			right = right.map(item => {
+				const reItem = item + '/' + eval(n);
+				if (reItem.match(/[a-zA-Z]/g)) {
+					return reItem;
+				} else {
+					return eval(reItem);
+				}
+			});
+//			console.log('left', left, right)
+		}
+		return { left, right };
 	}
-	
 	toStr(r) {
 		return r.reduce((accumulator, value, index) => {
+//			console.log(r, value)
 			let op = '';
-			if (index && !value.match(/[+-]/g)) op = '+';
-			else value = value.replace('+', '');
+			if (index && !String(value).match(/[+-]/g)) op = '+';
+			else value = String(value).replace('+', '');
 			return accumulator + op + value;
 		}, '');
 	}
+	
 	
 	solve(param, target) {
 		let multiResult = [];
@@ -152,20 +194,13 @@ class Solve {
 		multiResult = this.plusTainter(multiResult);
 		console.log('multiResult', multiResult);
 		
-		return;
-		let r;
-		try {
-			r = eval(this.toStr(multiResult.right));
-		} catch (e) {
-			r = this.toStr(multiResult.right);
-		}
-		
+		const { left, right } = this.divider(multiResult, target);
 		const result = {
-			[this.toStr(multiResult.left)]: r
-		};
-		return { multiResult, result };
+			[this.toStr(left)]: this.toStr(right)
+		}
+		return { result };
 	}
 }
 //const b = new Solve('5 + 4 -3 + 7/c = 2 *a / 5 + 6.4 * -2 / c - 4/3 + 9 + 6', 'c + 3 = a + 5');
-const b = new Solve('b + 3/2 =1 - 5 * a - c + 1');
+const b = new Solve('a + b = 6 - c', '2 * a- 2*c = -2 - b', 'a + 3 * b + c = 10');
 console.log(b.equationsStructure);
