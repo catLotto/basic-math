@@ -44,33 +44,40 @@ class Solve {
 		return eval(n) + r;
 	}
 	
-	plusTainter(r) {
-		for (const mode in r) {
-			let n = 0;
-			r[mode] = r[mode].map(item => {
-				if (!item.match(/[a-zA-Z]/g)) {
-					n += eval(item);
-					return 0;
-				}
-				return item;
-			});
-			
-			if (n) r[mode].push(String(n));
-//			console.log('mode', mode, 'w', r[mode]);
-			r[mode] = r[mode].filter(item => {
-				if (item !== 0) return true;
-			});
-		}
+	plusTainter(zero) {
+		let n = 0;
+		zero = zero.map(item => {
+			if (!item.match(/[a-zA-Z]/g)) {
+				n += eval(item);
+				return 0;
+			}
+			return item;
+		});
+
+		if (n) zero.push(String(n));
+//		console.log('mode', zero);
+		return zero.filter(item => {
+			if (item !== 0) return true;
+		});
 	}
 	
-	
+	invertValue(v) {
+		v = v.replace(/\+/g, '');
+		if (v === '0') {
+			return '';
+		}
+		else if (v.toString()[0] === '-')
+			return v.slice(1);
+		else
+			return '-' + v;
+	}
 	
 	parseEq(str) {
 		const operator = '+-*/';
 		const splitChar = '*/=';
-		const r = { left: [], right: [] };
+		let zero = [];
 		let cursor = 0;
-		let mode = 'left'
+		let dir = ''; // Direct is '' or '-'
 		
 		const eq = str.replace(/ /g, '') + '+0'; // '-3=2a+6*2';
 		if (eq.match(/[\w\d]{2,}/g)) throw Error('Variable name should be one length.');
@@ -79,7 +86,7 @@ class Solve {
 		while (cursor < eq.length) {
 			const c = eq[cursor]; // Defined current char
 			if (c === '=') {
-				mode = 'right';  // Set direct
+				dir = '-'
 			} else {
 				let lastPos = find(eq, /[^\w\d*/.]/g, cursor + 1);
 			
@@ -87,72 +94,78 @@ class Solve {
 					lastPos = find(eq, /[^\w\d*/.]/g, lastPos + 1);
 				}
 				
-				const v = eq.substring(cursor, lastPos === -1 ? undefined : lastPos);
-				if (v.search(/[*/]/) === -1) r[mode].push(v);
-				else r[mode].push(this.asterWrap(v));
+				let v;
+				v = eq.substring(cursor, lastPos === -1 ? undefined : lastPos);
+				if (dir === '-') {
+					v = this.invertValue(v);
+				}
 				
+				if (v !== '') {
+					if (v.search(/[*/]/) === -1) zero.push(v.replace(/\+/g, ''));
+					else zero.push(this.asterWrap(v.replace(/\+/g, '')));
+
+				}
 				if (lastPos === -1) break;
 				else cursor = lastPos - 1;
-
 			}
 			cursor++;
 		}
 		
-		this.plusTainter(r);
+		zero = this.plusTainter(zero);
 		
-		return r;
+		return zero;
 	}
 	
 	assignTainter(r, param) {
-		for (const mode in r) {
-			r[mode] = r[mode].map(item => {
-				let resultItem = item;
-				for (const key in param) {
-					resultItem = resultItem.replace(key, param[key]);
-				}
-				return resultItem;
-			});
-		}
+		return r.map(item => {
+			let resultItem = item;
+			for (const key in param) {
+				resultItem = resultItem.replace(key, param[key]);
+			}
+			return resultItem;
+		});
 	}
 	
 	moveTainter(r) {
-		for (const mode in r) {
-			r[mode] = r[mode].map(item => {
-				if (item.match(/[a-zA-Z]/g)) {
-					if (mode === 'right') {
-						r['left'].push(item);
-						return 0;
-					}
-				} else {
-					if (mode === 'left') {
-						r['right'].push(item);
-						return 0;
-					}
-				}
-				return item;
-			});
-			r[mode] = r[mode].filter(item => {
-				if (item !== 0) return true;
-			});
-		}
+			
+	}
+	
+	toStr(r) {
+		return r.reduce((accumulator, value, index) => {
+			let op = '';
+			if (index && !value.match(/[+-]/g)) op = '+';
+			else value = value.replace('+', '');
+			return accumulator + op + value;
+		}, '');
 	}
 	
 	solve(param, target) {
-		const multiResult = { left: [], right: [] };
+		let multiResult = [];
 		for (const currentEquation of this.equationsStructure) {
-			for (const mode in currentEquation) {
-				for (const item of currentEquation[mode]) {
-					multiResult[mode].push(item);
-				}
+			for (const item of currentEquation) {
+				multiResult.push(item);
 			}
 		}
-		if (param) this.assignTainter(multiResult, param);
-		this.moveTainter(multiResult);
+		if (param) multiResult = this.assignTainter(multiResult, param);
+//		this.moveTainter(multiResult);
 		
-		this.plusTainter(multiResult);
-		return multiResult;
+		multiResult = this.plusTainter(multiResult);
+		console.log('multiResult', multiResult);
+		
+		return;
+		let r;
+		try {
+			r = eval(this.toStr(multiResult.right));
+		} catch (e) {
+			r = this.toStr(multiResult.right);
+		}
+		
+		const result = {
+			[this.toStr(multiResult.left)]: r
+		};
+		return { multiResult, result };
 	}
 }
 //const b = new Solve('5 + 4 -3 + 7/c = 2 *a / 5 + 6.4 * -2 / c - 4/3 + 9 + 6', 'c + 3 = a + 5');
-const b = new Solve('b=1', 'c = 1');
+const b = new Solve('b + 3/2 =1 - 5 * a - c + 1');
 console.log(b.equationsStructure);
